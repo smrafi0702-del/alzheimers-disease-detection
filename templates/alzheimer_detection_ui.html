@@ -1,0 +1,2206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroScan AI — Alzheimer's Early Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --surface2: #f7f9fc;
+    --border: rgba(30,64,120,0.10);
+    --navy: #0f2952;
+    --blue: #1e5ba8;
+    --cyan: #0ea5e9;
+    --cyan-dim: rgba(14,165,233,0.10);
+    --cyan-glow: rgba(14,165,233,0.30);
+    --green: #10b981;
+    --green-dim: rgba(16,185,129,0.12);
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.12);
+    --yellow: #eab308;
+    --yellow-dim: rgba(234,179,8,0.12);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --text: #0f2952;
+    --text-dim: #64748b;
+    --text-muted: #94a3b8;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+    --shadow-sm: 0 1px 3px rgba(15,41,82,0.08), 0 1px 2px rgba(15,41,82,0.04);
+    --shadow: 0 4px 16px rgba(15,41,82,0.10), 0 2px 4px rgba(15,41,82,0.06);
+    --shadow-lg: 0 10px 40px rgba(15,41,82,0.12), 0 4px 12px rgba(15,41,82,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  ::selection {
+    background: rgba(14,165,233,0.18);
+    color: var(--navy);
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(15,41,82,0.15); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(15,41,82,0.28); }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle dot grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(15,41,82,0.07) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Soft gradient orbs */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb-1 {
+    width: 600px; height: 600px;
+    background: rgba(14,165,233,0.07);
+    top: -150px; left: -150px;
+    animation: orbFloat 18s ease-in-out infinite;
+  }
+  .orb-2 {
+    width: 500px; height: 500px;
+    background: rgba(30,91,168,0.05);
+    bottom: -100px; right: -100px;
+    animation: orbFloat 22s ease-in-out infinite reverse;
+  }
+
+  @keyframes orbFloat {
+    0%, 100% { transform: translate(0,0); }
+    50% { transform: translate(40px, 30px); }
+  }
+
+  /* Layout */
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo-icon {
+    width: 40px; height: 40px;
+    position: relative;
+  }
+
+  .logo-icon svg { width: 100%; height: 100%; }
+
+  .logo-text {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: 0;
+    color: var(--navy);
+  }
+
+  .logo-text span { color: var(--cyan); }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    letter-spacing: 0.3px;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    padding: 56px 0 44px;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding: 5px 14px;
+    border: 1px solid rgba(14,165,233,0.25);
+    border-radius: 100px;
+    background: rgba(14,165,233,0.06);
+    opacity: 0;
+    animation: fadeUp 0.6s 0.2s forwards;
+  }
+
+  .hero h1 {
+    font-family: var(--sans);
+    font-size: clamp(26px, 4.5vw, 48px);
+    font-weight: 300;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    margin-bottom: 16px;
+    color: var(--navy);
+    opacity: 0;
+    animation: fadeUp 0.6s 0.4s forwards;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    font-weight: 600;
+    color: var(--cyan);
+  }
+
+  .hero p {
+    font-size: 16px;
+    color: var(--text-dim);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.6s forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Main content grid */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .main-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Panel base */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    background: var(--surface2);
+  }
+
+  .panel-header .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    padding: 32px 24px;
+  }
+
+  .drop-area {
+    border: 2px dashed rgba(14,165,233,0.25);
+    border-radius: 14px;
+    padding: 44px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+    background: rgba(14,165,233,0.02);
+  }
+
+  .drop-area::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, var(--cyan-dim) 0%, transparent 65%);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .drop-area:hover, .drop-area.dragover {
+    border-color: var(--cyan);
+    background: rgba(14,165,233,0.04);
+    box-shadow: 0 0 0 4px rgba(14,165,233,0.08);
+  }
+
+  .drop-area:hover::before, .drop-area.dragover::before {
+    opacity: 1;
+  }
+
+  .upload-icon {
+    width: 52px; height: 52px;
+    margin: 0 auto 14px;
+    color: var(--cyan);
+    opacity: 0.8;
+  }
+
+  .drop-area h3 {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: var(--navy);
+  }
+
+  .drop-area p {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .btn-upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 22px;
+    background: var(--cyan);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(14,165,233,0.3);
+  }
+
+  .btn-upload:hover {
+    background: #0284c7;
+    box-shadow: 0 4px 14px rgba(14,165,233,0.4);
+    transform: translateY(-1px);
+  }
+
+  #fileInput { position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none; }
+
+  /* Preview area */
+  .preview-area {
+    margin-top: 20px;
+    display: none;
+  }
+
+  .preview-area.visible { display: block; }
+
+  .preview-img-wrap {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .preview-img-wrap img {
+    width: 100%;
+    height: 220px;
+    object-fit: contain;
+    display: block;
+  }
+
+  .file-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .file-name {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+
+  .btn-remove {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 4px;
+    transition: color 0.2s;
+  }
+
+  .btn-remove:hover { color: var(--red); }
+
+  /* Analyze button */
+  .btn-analyze {
+    width: 100%;
+    margin-top: 16px;
+    padding: 15px;
+    background: var(--navy);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: none;
+    box-shadow: 0 4px 14px rgba(15,41,82,0.25);
+  }
+
+  .btn-analyze.visible {
+    display: block;
+    animation: fadeUp 0.3s forwards;
+  }
+
+  .btn-analyze:hover {
+    background: var(--blue);
+    box-shadow: 0 6px 20px rgba(15,41,82,0.30);
+    transform: translateY(-1px);
+  }
+
+  .btn-analyze:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Info panel */
+  .info-cards {
+    padding: 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .info-card {
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .info-card .label {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .info-card .value {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--blue);
+  }
+
+  /* ===== SCANNING ANIMATION OVERLAY ===== */
+  .scan-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(248,250,252,0.96);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .scan-overlay.active { display: flex; }
+
+  /* Central scan widget */
+  .scan-container {
+    position: relative;
+    width: 260px;
+    height: 260px;
+  }
+
+  /* MRI image circle */
+  .scan-brain {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid rgba(14,165,233,0.20);
+    position: relative;
+    background: #fff;
+    box-shadow: 0 0 0 8px rgba(14,165,233,0.06), 0 0 0 16px rgba(14,165,233,0.03);
+  }
+
+  .scan-brain img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: grayscale(0.3) brightness(0.95);
+  }
+
+  /* Scan sweep line */
+  .scan-line {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(14,165,233,0.4) 20%,
+      rgba(14,165,233,0.9) 50%,
+      rgba(14,165,233,0.4) 80%,
+      transparent 100%);
+    box-shadow: 0 0 12px rgba(14,165,233,0.5), 0 2px 20px rgba(14,165,233,0.2);
+    animation: scanMove 2.2s cubic-bezier(0.4,0,0.6,1) infinite;
+    top: 0;
+  }
+
+  @keyframes scanMove {
+    0%   { top: 0%;   opacity: 0; }
+    5%   { opacity: 1; }
+    95%  { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+
+  /* Corner brackets */
+  .scan-corner {
+    position: absolute;
+    width: 20px; height: 20px;
+    border-color: var(--cyan);
+    border-style: solid;
+    opacity: 0.7;
+  }
+  .scan-corner.tl { top: -1px;  left: -1px;  border-width: 2px 0 0 2px; }
+  .scan-corner.tr { top: -1px;  right: -1px; border-width: 2px 2px 0 0; }
+  .scan-corner.bl { bottom: -1px; left: -1px;  border-width: 0 0 2px 2px; }
+  .scan-corner.br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+  /* Outer orbit rings */
+  .scan-ring {
+    position: absolute;
+    inset: -24px;
+    border-radius: 50%;
+    border: 1px solid rgba(14,165,233,0.15);
+    animation: ringRotate 5s linear infinite;
+  }
+
+  .scan-ring::before {
+    content: '';
+    position: absolute;
+    width: 7px; height: 7px;
+    background: var(--cyan);
+    border-radius: 50%;
+    top: -3.5px;
+    left: 50%;
+    margin-left: -3.5px;
+    box-shadow: 0 0 8px var(--cyan);
+  }
+
+  @keyframes ringRotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  .scan-ring-2 {
+    position: absolute;
+    inset: -46px;
+    border-radius: 50%;
+    border: 1px solid rgba(16,185,129,0.10);
+    animation: ringRotate 9s linear infinite reverse;
+  }
+
+  .scan-ring-2::before {
+    content: '';
+    position: absolute;
+    width: 5px; height: 5px;
+    background: var(--green);
+    border-radius: 50%;
+    bottom: -2.5px;
+    left: 50%;
+    margin-left: -2.5px;
+    box-shadow: 0 0 6px var(--green);
+  }
+
+  /* Status label below container */
+  .scan-label {
+    margin-top: 44px;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--blue);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .scan-label span {
+    animation: blink 1s step-end infinite;
+    color: var(--cyan);
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* Progress bar */
+  .scan-progress-bar {
+    width: 280px;
+    height: 3px;
+    background: rgba(14,165,233,0.12);
+    border-radius: 2px;
+    margin-top: 16px;
+    overflow: hidden;
+  }
+
+  .scan-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--blue));
+    width: 0%;
+    transition: width 0.15s ease;
+    border-radius: 2px;
+  }
+
+  /* Step list */
+  .scan-steps {
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 280px;
+  }
+
+  .scan-step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.3s, color 0.3s;
+    letter-spacing: 0.3px;
+  }
+
+  .scan-step.active { opacity: 1; color: var(--navy); }
+  .scan-step.done   { opacity: 1; color: var(--green); }
+
+  .step-icon {
+    width: 15px; height: 15px;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    flex-shrink: 0;
+  }
+
+  /* ===== OUTPUT SECTION ===== */
+  .output-section {
+    margin-top: 32px;
+    display: none;
+  }
+
+  .output-section.visible {
+    display: block !important;
+  }
+
+  .output-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 768px) {
+    .output-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Result panel */
+  .result-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    animation: fadeUp 0.5s forwards;
+    box-shadow: var(--shadow);
+  }
+
+  .diagnosis-display {
+    padding: 28px 24px 22px;
+    text-align: center;
+  }
+
+  .diagnosis-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .diagnosis-label {
+    font-family: var(--sans);
+    font-size: clamp(18px, 3vw, 26px);
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .confidence-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .confidence-bar-wrap {
+    flex: 1;
+    max-width: 180px;
+    height: 6px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .confidence-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 0%;
+  }
+
+  .confidence-val {
+    font-family: var(--mono);
+    font-size: 13px;
+    min-width: 45px;
+  }
+
+  /* Class probabilities */
+  .probs-section {
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .probs-title {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .prob-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .prob-label {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    color: var(--text-dim);
+    width: 140px;
+    flex-shrink: 0;
+    letter-spacing: 0.2px;
+  }
+
+  .prob-bar-wrap {
+    flex: 1;
+    height: 5px;
+    background: var(--surface2);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .prob-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 0%;
+  }
+
+  .prob-val {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    width: 36px;
+    text-align: right;
+  }
+
+  /* Grad-CAM panel */
+  .gradcam-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .gradcam-img-area {
+    padding: 20px 24px;
+    position: relative;
+  }
+
+  .gradcam-img-wrap {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .gradcam-img-wrap img {
+    width: 100%;
+    display: block;
+  }
+
+  .gradcam-legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 9px 12px;
+    background: var(--surface2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .legend-bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(to right, #3b82f6, #06b6d4, #10b981, #eab308, #ef4444);
+  }
+
+  .legend-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+  }
+
+  /* Explanation box */
+  .explanation-box {
+    margin-top: 24px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+
+  .explanation-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  .explanation-text {
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text-dim);
+  }
+
+  .explanation-text strong { color: var(--text); }
+
+  /* ── AI Report Panel ────────────────────────────────── */
+  .ai-report {
+    margin-top: 24px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .ai-report-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: var(--navy);
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.75);
+    text-transform: uppercase;
+  }
+
+  .ai-report-header .dot {
+    background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
+  }
+
+  .ai-report-loading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 28px 22px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11.5px;
+  }
+
+  .ai-spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--cyan);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .ai-report-body {
+    padding: 4px 0 16px;
+  }
+
+  .ai-section {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ai-section:last-child { border-bottom: none; }
+
+  .ai-section-title {
+    font-family: var(--mono);
+    font-size: 9.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--blue);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ai-section-title span { font-size: 13px; }
+
+  .ai-section-text {
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: var(--text-dim);
+  }
+
+  .ai-section-text strong { color: var(--text); }
+
+  .ai-list {
+    list-style: none;
+    padding: 0; margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .ai-list li {
+    font-size: 13.5px;
+    line-height: 1.65;
+    color: var(--text-dim);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .ai-list li::before {
+    content: '▸';
+    color: var(--cyan);
+    flex-shrink: 0;
+    margin-top: 3px;
+    font-size: 9px;
+  }
+
+  .ai-list.questions li::before { content: 'Q'; color: var(--blue); font-family: var(--mono); font-size: 9px; font-weight: 600; }
+  .ai-list.diet li::before      { content: '▸'; color: var(--green); font-size: 9px; }
+  .ai-list.lifestyle li::before { content: '▸'; color: var(--orange); font-size: 9px; }
+  .ai-list.symptoms li::before  { content: '!'; color: var(--red); font-family: var(--mono); font-size: 9px; font-weight: 600; }
+  .ai-list.steps li::before     { content: '→'; color: var(--blue); font-family: var(--mono); font-size: 10px; }
+
+  .ai-error {
+    padding: 20px 22px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+  }
+
+  /* Disclaimer */
+  .disclaimer {
+    margin-top: 24px;
+    padding: 14px 18px;
+    background: rgba(234,179,8,0.07);
+    border: 1px solid rgba(234,179,8,0.22);
+    border-radius: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.65;
+  }
+
+  .disclaimer-icon { font-size: 16px; flex-shrink: 0; }
+
+  /* Severity colors */
+  .sev-none { color: var(--green); border-color: rgba(16,185,129,0.35); background: var(--green-dim); }
+  .sev-none .confidence-bar, .sev-none .prob-bar { background: var(--green); }
+  .sev-very { color: #b45309; border-color: rgba(234,179,8,0.35); background: var(--yellow-dim); }
+  .sev-very .confidence-bar, .sev-very .prob-bar { background: var(--yellow); }
+  .sev-mild { color: var(--orange); border-color: rgba(249,115,22,0.35); background: var(--orange-dim); }
+  .sev-mild .confidence-bar, .sev-mild .prob-bar { background: var(--orange); }
+  .sev-moderate { color: var(--red); border-color: rgba(239,68,68,0.35); background: var(--red-dim); }
+  .sev-moderate .confidence-bar, .sev-moderate .prob-bar { background: var(--red); }
+
+  /* Download button */
+  .btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 28px;
+    background: var(--navy);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 3px 12px rgba(15,41,82,0.22);
+  }
+  .btn-download:hover {
+    background: var(--blue);
+    transform: translateY(-1px);
+    box-shadow: 0 5px 18px rgba(15,41,82,0.30);
+  }
+  .btn-download:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn-download-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+
+  /* Reset button */
+  .btn-reset {
+    padding: 11px 28px;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-reset:hover {
+    border-color: var(--navy);
+    color: var(--navy);
+    background: rgba(15,41,82,0.04);
+  }
+
+  /* Instruction cards */
+  .instructions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  @media (max-width: 640px) {
+    .instructions { grid-template-columns: 1fr; }
+  }
+
+  .inst-card {
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-align: center;
+  }
+
+  .inst-num {
+    font-family: var(--mono);
+    font-size: 28px;
+    color: var(--cyan);
+    opacity: 0.3;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .inst-title {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .inst-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .demo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(255,209,102,0.1);
+    border: 1px solid rgba(255,209,102,0.3);
+    border-radius: 100px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--yellow);
+    letter-spacing: 1px;
+    margin-left: 10px;
+  }
+</style>
+</head>
+<body>
+<div style="position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--navy) 0%,var(--cyan) 50%,var(--navy) 100%);z-index:200;"></div>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<!-- Scan Overlay -->
+<div class="scan-overlay" id="scanOverlay">
+  <div class="scan-container">
+    <div class="scan-ring-2"></div>
+    <div class="scan-ring"></div>
+    <div class="scan-brain" id="scanBrainDisplay">
+      <img id="scanPreviewImg" src="" alt="MRI Scan">
+      <div class="scan-line"></div>
+    </div>
+    <div class="scan-corner tl"></div>
+    <div class="scan-corner tr"></div>
+    <div class="scan-corner bl"></div>
+    <div class="scan-corner br"></div>
+  </div>
+  <div class="scan-label">ANALYZING MRI<span>_</span></div>
+  <div class="scan-progress-bar">
+    <div class="scan-progress-fill" id="scanProgressFill"></div>
+  </div>
+  <div class="scan-steps" id="scanSteps">
+    <div class="scan-step" id="step1"><div class="step-icon">○</div>PREPROCESSING IMAGE</div>
+    <div class="scan-step" id="step2"><div class="step-icon">○</div>EXTRACTING FEATURES</div>
+    <div class="scan-step" id="step3"><div class="step-icon">○</div>RUNNING DENSENET INFERENCE</div>
+    <div class="scan-step" id="step4"><div class="step-icon">○</div>GENERATING GRAD-CAM HEATMAP</div>
+    <div class="scan-step" id="step5"><div class="step-icon">○</div>CLASSIFYING IMPAIRMENT</div>
+  </div>
+</div>
+
+<div class="app">
+  <header>
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="20" r="19" stroke="rgba(14,165,233,0.3)" stroke-width="1"/>
+          <path d="M12 20C12 15.6 15.6 12 20 12C24.4 12 28 15.6 28 20" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M12 20C12 24.4 15.6 28 20 28C24.4 28 28 24.4 28 20" stroke="rgba(14,165,233,0.4)" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="2 3"/>
+          <circle cx="20" cy="20" r="4" fill="rgba(14,165,233,0.15)" stroke="var(--cyan)" stroke-width="1"/>
+          <path d="M20 10V12M20 28V30M10 20H12M28 20H30" stroke="rgba(14,165,233,0.4)" stroke-width="1" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="logo-text">Neuro<span>Scan</span> AI <span class="demo-badge">🔴 LIVE</span></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="status-pill" id="statusPill">
+        <div class="status-dot" id="statusDot" style="background:var(--text-dim);box-shadow:none;animation:none;"></div>
+        <span id="statusText">CHECKING...</span>
+      </div>
+      <button onclick="showServerConfig()" style="background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-dim);font-family:var(--mono);font-size:10px;padding:6px 12px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;" onmouseover="this.style.borderColor='var(--cyan)';this.style.color='var(--cyan)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-dim)'">⚙ CONFIG</button>
+    </div>
+  </header>
+
+  <!-- Server config panel -->
+  <div id="serverConfigPanel" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-top:16px;">
+    <div style="font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:14px;">⚙ Backend Server Configuration</div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <div style="flex:1;min-width:220px;">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--text-dim);margin-bottom:6px;letter-spacing:1px;">FLASK SERVER URL</div>
+        <input id="backendUrlInput" type="text" value="http://localhost:5000"
+          style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;"
+          onfocus="this.style.borderColor='var(--cyan)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:18px;">
+        <button onclick="applyServerUrl()" style="padding:10px 20px;background:var(--cyan);border:none;border-radius:8px;color:#000;font-family:var(--mono);font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;">CONNECT</button>
+        <button onclick="document.getElementById('serverConfigPanel').style.display='none'" style="padding:10px 16px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text-dim);font-family:var(--mono);font-size:11px;cursor:pointer;">CLOSE</button>
+      </div>
+    </div>
+    <div id="configStatus" style="margin-top:12px;font-family:var(--mono);font-size:11px;color:var(--text-dim);display:none;"></div>
+    <div style="margin-top:14px;padding:12px;background:var(--surface2);border-radius:8px;font-family:var(--mono);font-size:11px;color:var(--text-dim);line-height:1.8;border:1px solid var(--border);">
+      <span style="color:var(--cyan);">HOW TO START THE SERVER:</span><br>
+      1. Put <span style="color:var(--text);">app.py</span> + your <span style="color:var(--text);">.h5 model</span> + this HTML in the same folder<br>
+      2. Run: <span style="color:var(--green);">python app.py</span><br>
+      3. Open this page at <span style="color:var(--green);">http://localhost:5000</span> (not file://)<br>
+      4. Or keep URL as-is and click CONNECT above
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-tag">DenseNet · Grad-CAM · Transfer Learning</div>
+    <h1>Early <em>Alzheimer's</em><br>Detection System</h1>
+    <p>Upload a brain MRI scan for automated deep learning classification and visual explanation of affected regions.</p>
+  </div>
+  <!-- AI Report Toggle -->
+  <div style="display:flex;justify-content:center;margin-bottom:28px;">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-sm);">
+      <div>
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">AI Clinical Report</div>
+        <div style="font-size:12px;color:var(--text-dim);">Generate Gemini-powered report after scan</div>
+      </div>
+      <label style="position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0;cursor:pointer;">
+        <input type="checkbox" id="aiReportToggle" checked style="opacity:0;width:0;height:0;">
+        <span id="aiToggleTrack" style="position:absolute;inset:0;background:var(--cyan);border-radius:26px;transition:background 0.2s;">
+          <span id="aiToggleThumb" style="position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:transform 0.2s;transform:translateX(20px);box-shadow:0 1px 4px rgba(0,0,0,0.2);"></span>
+        </span>
+      </label>
+      <div id="aiToggleLabel" style="font-family:var(--mono);font-size:10px;font-weight:600;color:var(--cyan);letter-spacing:1px;min-width:28px;">ON</div>
+    </div>
+  </div>
+  <div class="instructions">
+    <div class="inst-card">
+      <div class="inst-num">01</div>
+      <div class="inst-title">Upload MRI Scan</div>
+      <div class="inst-desc">Drop or select a brain MRI image in JPG, PNG, or NIfTI format</div>
+    </div>
+    <div class="inst-card">
+      <div class="inst-num">02</div>
+      <div class="inst-title">AI Analysis</div>
+      <div class="inst-desc">DenseNet model classifies the scan across 4 clinical categories</div>
+    </div>
+    <div class="inst-card">
+      <div class="inst-num">03</div>
+      <div class="inst-title">Visual Report</div>
+      <div class="inst-desc">Grad-CAM heatmap highlights affected brain regions visually</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <!-- Upload Panel -->
+    <div>
+      <div class="panel">
+        <div class="panel-header"><div class="dot"></div>MRI INPUT</div>
+        <div class="upload-zone">
+          <div class="drop-area" id="dropArea" onclick="triggerFileInput(event)">
+            <div class="upload-icon">
+              <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="8" y="12" width="44" height="36" rx="4" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3"/>
+                <path d="M30 38V22M30 22L23 29M30 22L37 29" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="30" cy="22" r="1.5" fill="currentColor"/>
+              </svg>
+            </div>
+            <h3>Drop MRI scan here</h3>
+            <p>Supports JPG, PNG, DICOM<br>(grayscale or RGB brain MRI)</p>
+            <button class="btn-upload" id="selectFileBtn" type="button" onclick="event.stopPropagation(); document.getElementById('fileInput').click();">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor"><path d="M7 1l4 4H8v5H6V5H3L7 1z"/><path d="M1 11h12v2H1v-2z" opacity="0.5"/></svg>
+              SELECT FILE
+            </button>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileSelect(event)">
+
+          <div class="preview-area" id="previewArea">
+            <div class="preview-img-wrap">
+              <img id="previewImg" src="" alt="MRI Preview">
+            </div>
+            <div class="file-info">
+              <span class="file-name" id="fileName">mri_scan.jpg</span>
+              <button class="btn-remove" onclick="resetAll()" title="Remove">✕</button>
+            </div>
+          </div>
+
+          <button class="btn-analyze" id="btnAnalyze" onclick="startAnalysis()">
+            ▶ &nbsp;ANALYZE SCAN
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Panel -->
+    <div>
+      <div class="panel">
+        <div class="panel-header"><div class="dot"></div>CLASSIFICATION CATEGORIES</div>
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="label">Class 1</div>
+            <div class="value" style="color: var(--green)">No Impairment</div>
+          </div>
+          <div class="info-card">
+            <div class="label">Class 2</div>
+            <div class="value" style="color: var(--yellow)">Very Mild</div>
+          </div>
+          <div class="info-card">
+            <div class="label">Class 3</div>
+            <div class="value" style="color: var(--orange)">Mild</div>
+          </div>
+          <div class="info-card">
+            <div class="label">Class 4</div>
+            <div class="value" style="color: var(--red)">Moderate</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:16px;">
+        <div class="panel-header"><div class="dot"></div>MODEL INFO</div>
+        <div class="info-cards">
+          <div class="info-card">
+            <div class="label">Architecture</div>
+            <div class="value">DenseNet-121</div>
+          </div>
+          <div class="info-card">
+            <div class="label">Method</div>
+            <div class="value">Transfer Learn</div>
+          </div>
+          <div class="info-card">
+            <div class="label">Explainability</div>
+            <div class="value">Grad-CAM</div>
+          </div>
+          <div class="info-card">
+            <div class="label">Input Size</div>
+            <div class="value">224 × 224</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTPUT SECTION -->
+  <div class="output-section" id="outputSection">
+    <div class="output-grid">
+      <!-- Diagnosis -->
+      <div class="result-panel" id="resultPanel">
+        <div class="panel-header"><div class="dot"></div>DIAGNOSIS RESULT</div>
+        <div class="diagnosis-display">
+          <div class="diagnosis-badge" id="diagnosisBadge">—</div>
+          <div class="diagnosis-label" id="diagnosisLabel">—</div>
+          <p style="font-size:13px; color:var(--text-dim); margin-top:6px;" id="diagnosisSubtext">—</p>
+          <div class="confidence-row">
+            <div class="confidence-bar-wrap">
+              <div class="confidence-bar" id="confidenceBar"></div>
+            </div>
+            <div class="confidence-val" id="confidenceVal">—</div>
+          </div>
+        </div>
+        <div class="probs-section">
+          <div class="probs-title">Class Probabilities</div>
+          <div class="prob-row">
+            <div class="prob-label" style="color:var(--orange)">Mild Impairment</div>
+            <div class="prob-bar-wrap"><div class="prob-bar" id="prob0" style="background:var(--orange)"></div></div>
+            <div class="prob-val" id="probVal0">—</div>
+          </div>
+          <div class="prob-row">
+            <div class="prob-label" style="color:var(--red)">Moderate Impairment</div>
+            <div class="prob-bar-wrap"><div class="prob-bar" id="prob1" style="background:var(--red)"></div></div>
+            <div class="prob-val" id="probVal1">—</div>
+          </div>
+          <div class="prob-row">
+            <div class="prob-label" style="color:var(--green)">No Impairment</div>
+            <div class="prob-bar-wrap"><div class="prob-bar" id="prob2" style="background:var(--green)"></div></div>
+            <div class="prob-val" id="probVal2">—</div>
+          </div>
+          <div class="prob-row">
+            <div class="prob-label" style="color:var(--yellow)">Very Mild</div>
+            <div class="prob-bar-wrap"><div class="prob-bar" id="prob3" style="background:var(--yellow)"></div></div>
+            <div class="prob-val" id="probVal3">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grad-CAM (shown only when impairment detected) -->
+      <div class="gradcam-panel" id="gradcamPanel" style="display:none;">
+        <div class="panel-header"><div class="dot"></div>GRAD-CAM HEATMAP</div>
+        <div class="gradcam-img-area">
+          <div class="gradcam-img-wrap">
+            <canvas id="gradcamCanvas" style="width:100%; display:block;"></canvas>
+          </div>
+          <div class="gradcam-legend">
+            <div class="legend-label">LOW</div>
+            <div class="legend-bar"></div>
+            <div class="legend-label">HIGH ACTIVATION</div>
+          </div>
+          <p style="font-size:11px; color:var(--text-dim); margin-top:10px; line-height:1.6; font-family:var(--mono)">
+            ⟶ Red/yellow regions indicate areas most influential to the classification decision.
+          </p>
+        </div>
+      </div>
+
+      <!-- Healthy notice (shown only when NoImpairment) -->
+      <div id="healthyNotice" style="display:none; background:var(--surface); border:1px solid rgba(16,185,129,0.2); box-shadow: var(--shadow); border-radius:16px; overflow:hidden; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; text-align:center;">
+        <div style="width:72px;height:72px;border-radius:50%;background:rgba(16,185,129,0.1);border:2px solid rgba(16,185,129,0.3);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:20px;">🧠</div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--green);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Brain Appears Healthy</div>
+        <div style="font-size:13px;color:var(--text-dim);line-height:1.7;max-width:260px;">No significant impairment regions detected. Grad-CAM heatmap is not generated for healthy scans.</div>
+      </div>
+    </div>
+
+    <!-- AI Report Panel -->
+    <div class="ai-report" id="aiReport" style="display:none;">
+      <div class="ai-report-header">
+        <div class="dot"></div>
+        AI CLINICAL ASSISTANT — Powered by Gemini
+      </div>
+      <!-- Loading state -->
+      <div class="ai-report-loading" id="aiLoading">
+        <div class="ai-spinner"></div>
+        <span>Generating personalised patient report...</span>
+      </div>
+      <!-- Report body (filled by JS) -->
+      <div class="ai-report-body" id="aiReportBody" style="display:none;"></div>
+      <!-- Error state -->
+      <div class="ai-error" id="aiError" style="display:none;"></div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+      <span class="disclaimer-icon">⚠</span>
+      <span><strong style="color:var(--orange)">Research & Educational Use Only.</strong> This AI tool is designed to assist research and is not a certified medical diagnostic device. Results must be reviewed and confirmed by a qualified neurologist or medical professional before any clinical decisions are made.</span>
+    </div>
+
+    <div class="btn-download-wrap">
+      <button class="btn-download" id="btnDownload" onclick="downloadReport()" style="display:none;">
+        ⬇ &nbsp;DOWNLOAD PDF REPORT
+      </button>
+      <button class="btn-reset" onclick="resetAll()">↺ &nbsp;ANALYZE NEW SCAN</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ============================================================
+  // FILE HANDLING
+  // ============================================================
+  let selectedFile = null;
+  let uploadedImageDataUrl = null;
+  let lastScanResult = null;  // stores full result for PDF generation
+
+  // Trigger file input — only when clicking drop-area background, not the button
+  function triggerFileInput(e) {
+    // Don't double-trigger if the button itself was clicked (it handles its own click)
+    if (e.target.closest('#selectFileBtn')) return;
+    document.getElementById('fileInput').click();
+  }
+
+  const dropArea = document.getElementById('dropArea');
+
+  dropArea.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropArea.classList.add('dragover');
+  });
+
+  dropArea.addEventListener('dragleave', e => {
+    if (!dropArea.contains(e.relatedTarget)) {
+      dropArea.classList.remove('dragover');
+    }
+  });
+
+  dropArea.addEventListener('drop', e => {
+    e.preventDefault();
+    dropArea.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) loadFile(file);
+    else if (file) alert('Please upload an image file (JPG, PNG, etc.)');
+  });
+
+  function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) loadFile(file);
+    // Reset input so same file can be re-selected
+    event.target.value = '';
+  }
+  // ── AI Report Toggle ──────────────────────────────────────────
+  const aiToggle = document.getElementById('aiReportToggle');
+
+  aiToggle.addEventListener('click', function() {
+    const on = this.checked;
+    document.getElementById('aiToggleTrack').style.background  = on ? 'var(--cyan)' : 'var(--border)';
+    document.getElementById('aiToggleThumb').style.transform   = on ? 'translateX(20px)' : 'translateX(0px)';
+    document.getElementById('aiToggleLabel').textContent       = on ? 'ON' : 'OFF';
+    document.getElementById('aiToggleLabel').style.color       = on ? 'var(--cyan)' : 'var(--text-muted)';
+  });
+
+  function isAIReportEnabled() {
+    return document.getElementById('aiReportToggle').checked;
+  }
+  function loadFile(file) {
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedImageDataUrl = e.target.result;
+      document.getElementById('previewImg').src = uploadedImageDataUrl;
+      document.getElementById('fileName').textContent = file.name;
+      document.getElementById('previewArea').classList.add('visible');
+      document.getElementById('btnAnalyze').classList.add('visible');
+      // Hide any previous results
+      document.getElementById('outputSection').style.display = 'none';
+      document.getElementById('outputSection').classList.remove('visible');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ============================================================
+  // SCANNING ANIMATION + BACKEND CALL — run in parallel
+  // Overlay stays open until BOTH animation AND backend are done
+  // ============================================================
+  function startAnalysis() {
+    if (!uploadedImageDataUrl) return;
+
+    const btnAnalyze = document.getElementById('btnAnalyze');
+    btnAnalyze.disabled = true;
+
+    // Show overlay with uploaded MRI
+    const overlay = document.getElementById('scanOverlay');
+    document.getElementById('scanPreviewImg').src = uploadedImageDataUrl;
+    overlay.classList.add('active');
+
+    // Reset all step indicators
+    ['step1','step2','step3','step4','step5'].forEach(id => {
+      const el = document.getElementById(id);
+      el.className = 'scan-step';
+      el.querySelector('.step-icon').textContent = '○';
+    });
+
+    const progressFill = document.getElementById('scanProgressFill');
+    progressFill.style.width = '0%';
+    progressFill.style.background = '';
+
+    const steps = [
+      { id: 'step1', delay: 200,  duration: 400  },
+      { id: 'step2', delay: 600,  duration: 400  },
+      { id: 'step3', delay: 1000, duration: 500  },
+      { id: 'step4', delay: 1500, duration: 400  },
+      { id: 'step5', delay: 1900, duration: 400  },
+    ];
+
+    // Progress bar: fills to 90% during animation, then pulses while waiting
+    let progress = 0;
+    let waitingMode = false;
+    let pulseDir = 1;
+
+    const progInterval = setInterval(() => {
+      if (!waitingMode) {
+        if (progress < 90) {
+          progress = Math.min(90, progress + 1.4);
+          progressFill.style.width = progress + '%';
+        }
+      } else {
+        // Gently pulse between 91-96% so user knows we are still working
+        progress += pulseDir * 0.3;
+        if (progress >= 96) pulseDir = -1;
+        if (progress <= 91) pulseDir =  1;
+        progressFill.style.width = progress + '%';
+      }
+    }, 70);
+
+    // Step animations (fixed timing)
+    steps.forEach((step) => {
+      setTimeout(() => {
+        const el = document.getElementById(step.id);
+        el.classList.add('active');
+        el.querySelector('.step-icon').textContent = '◎';
+      }, step.delay);
+
+      setTimeout(() => {
+        const el = document.getElementById(step.id);
+        el.classList.remove('active');
+        el.classList.add('done');
+        el.querySelector('.step-icon').textContent = '✓';
+      }, step.delay + step.duration);
+    });
+
+    // ── Promise A: animation finishes at 2.5s ──────────────────
+    const animDone = new Promise(resolve => setTimeout(resolve, 2500));
+
+    // Switch to waiting state after animation
+    animDone.then(() => {
+      waitingMode = true;
+      const label = document.querySelector('.scan-label');
+      if (label) label.innerHTML = 'AWAITING SERVER<span>_</span>';
+    });
+
+    // ── Promise B: backend call starts IMMEDIATELY ──────────────
+    const backendDone = fetchPrediction();
+
+    // ── Wait for BOTH before closing overlay ───────────────────
+    Promise.all([animDone, backendDone]).then(([, result]) => {
+      clearInterval(progInterval);
+
+      if (result && result._error) {
+        // Error: flash red then close
+        progressFill.style.background = 'var(--red)';
+        progressFill.style.width = '100%';
+        setTimeout(() => {
+          overlay.classList.remove('active');
+          resetScanOverlay();
+          showError(result._error);
+          btnAnalyze.disabled = false;
+        }, 500);
+      } else {
+        // Success: flash to 100% green then close
+        progressFill.style.background = 'var(--green)';
+        progressFill.style.width = '100%';
+        const label = document.querySelector('.scan-label');
+        if (label) label.innerHTML = '<span style="color:var(--green)">ANALYSIS COMPLETE ✓</span>';
+        setTimeout(() => {
+          overlay.classList.remove('active');
+          resetScanOverlay();
+          renderResults(result);
+          btnAnalyze.disabled = false;
+        }, 700);
+      }
+    });
+  }
+
+  function resetScanOverlay() {
+    const pf = document.getElementById('scanProgressFill');
+    pf.style.width = '0%';
+    pf.style.background = '';
+    const label = document.querySelector('.scan-label');
+    if (label) label.innerHTML = 'ANALYZING MRI<span>_</span>';
+  }
+
+  // ── Fetch from backend — never throws, returns {_error} on fail
+  async function fetchPrediction() {
+    try {
+      const blob = await fetch(uploadedImageDataUrl).then(r => r.blob());
+      const formData = new FormData();
+      formData.append('file', blob, 'mri_scan.png');
+
+      const response = await fetch(`${BACKEND_URL}/predict`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        return { _error: err.error || 'Server error ' + response.status };
+      }
+      return await response.json();
+
+    } catch (err) {
+      return { _error: err.message || 'Could not connect to Flask server' };
+    }
+  }
+
+  // ============================================================
+  // CLASS DATA
+  // Order matches alphabetical flow_from_directory assignment:
+  //   [0] MildDemented    → MildImpairment
+  //   [1] ModerateDemented → ModerateImpairment
+  //   [2] NonDemented     → NoImpairment
+  //   [3] VeryMildDemented → VeryMildImpairment
+  // Visit http://localhost:5000/debug to verify your model's order.
+  // ============================================================
+  const classData = [
+    {
+      label: 'Mild Impairment',
+      subtext: 'Moderate structural changes identified.',
+      badge: 'MILD',
+      sev: 'sev-mild',
+      explanation: `The scan indicates <strong>mild cognitive impairment (MCI)</strong> consistent with early Alzheimer's disease progression. Notable volume reduction in the hippocampus and entorhinal cortex is observed. The Grad-CAM heatmap shows <strong>concentrated activation in the temporal and parietal lobes</strong>, which are classically affected in Alzheimer's disease.<br><br>Prompt neurological consultation, comprehensive cognitive testing, and potential pharmacological intervention should be discussed with a specialist.`
+    },
+    {
+      label: 'Moderate Impairment',
+      subtext: 'Significant neurodegeneration pattern found.',
+      badge: 'MODERATE',
+      sev: 'sev-moderate',
+      explanation: `This scan shows <strong>significant structural changes consistent with moderate Alzheimer's disease</strong>. Substantial hippocampal atrophy, cortical thinning in the temporal and parietal regions, and possible ventricular enlargement are detected. The Grad-CAM heatmap indicates <strong>widespread activation across frontal, temporal, and parietal regions</strong>.<br><br>This classification warrants immediate specialist referral. A comprehensive care plan including pharmacological management, cognitive support therapies, and caregiver involvement should be established urgently.`
+    },
+    {
+      label: 'No Impairment',
+      subtext: 'No detectable signs of cognitive decline.',
+      badge: 'NORMAL',
+      sev: 'sev-none',
+      explanation: `The MRI scan shows <strong>no detectable signs of Alzheimer's disease or related cognitive impairment</strong>. Brain structures appear within normal anatomical parameters. Hippocampal volume and cortical thickness are preserved.<br><br>Regular follow-up scans are still recommended as part of routine neurological screening, especially for individuals with a family history of dementia.`
+    },
+    {
+      label: 'Very Mild Impairment',
+      subtext: 'Early indicators of cognitive change detected.',
+      badge: 'VERY MILD',
+      sev: 'sev-very',
+      explanation: `The model has detected <strong>very mild cognitive impairment</strong> patterns in this MRI scan. Subtle structural changes are present, particularly in the entorhinal cortex and hippocampal regions. These early changes may precede clinical symptoms by years.<br><br>The Grad-CAM heatmap highlights the <strong>medial temporal lobe</strong> as the primary region of interest. Early intervention, lifestyle modifications, and regular neurological evaluation are recommended at this stage.`
+    }
+  ];
+
+  // (Simulation helpers removed — results come from real Flask backend)
+
+  // ── Backend URL ───────────────────────────────────────────────
+  // If opening via http://localhost:5000 this auto-detects correctly.
+  // If opening via file:// set this to your Flask server address.
+  let BACKEND_URL = (() => {
+    // If served by Flask itself, use same origin
+    if (window.location.protocol !== 'file:' && window.location.port === '5000') {
+      return window.location.origin;
+    }
+    // Default fallback
+    return 'http://localhost:5000';
+  })();
+
+  // ── Connection status checker ─────────────────────────────────
+  function updateStatusUI(state) {
+    const dot  = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    if (state === 'connected') {
+      dot.style.background   = 'var(--green)';
+      dot.style.boxShadow    = '0 0 8px var(--green)';
+      dot.style.animation    = 'pulse 2s infinite';
+      text.textContent       = 'MODEL READY';
+      text.style.color       = '';
+    } else if (state === 'checking') {
+      dot.style.background   = 'var(--yellow)';
+      dot.style.boxShadow    = '0 0 8px var(--yellow)';
+      dot.style.animation    = 'pulse 1s infinite';
+      text.textContent       = 'CONNECTING...';
+      text.style.color       = 'var(--yellow)';
+    } else {
+      dot.style.background   = 'var(--red)';
+      dot.style.boxShadow    = '0 0 8px var(--red)';
+      dot.style.animation    = 'pulse 2s infinite';
+      text.textContent       = 'SERVER OFFLINE';
+      text.style.color       = 'var(--red)';
+    }
+  }
+
+  async function checkServerConnection() {
+    updateStatusUI('checking');
+    try {
+      const res = await fetch(`${BACKEND_URL}/health`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(4000)
+      });
+      if (res.ok) {
+        updateStatusUI('connected');
+        return true;
+      }
+      updateStatusUI('offline');
+      return false;
+    } catch {
+      updateStatusUI('offline');
+      return false;
+    }
+  }
+
+  // Check on load, then every 10 seconds
+  checkServerConnection();
+  setInterval(checkServerConnection, 10000);
+
+  // ── Config panel ──────────────────────────────────────────────
+  function showServerConfig() {
+    const panel = document.getElementById('serverConfigPanel');
+    document.getElementById('backendUrlInput').value = BACKEND_URL;
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    document.getElementById('configStatus').style.display = 'none';
+  }
+
+  async function applyServerUrl() {
+    const input = document.getElementById('backendUrlInput').value.trim().replace(/\/$/, '');
+    if (!input.startsWith('http')) {
+      showConfigStatus('URL must start with http:// or https://', 'var(--red)');
+      return;
+    }
+    BACKEND_URL = input;
+    showConfigStatus('Testing connection...', 'var(--yellow)');
+    const ok = await checkServerConnection();
+    if (ok) {
+      showConfigStatus('✓ Connected successfully!', 'var(--green)');
+      setTimeout(() => document.getElementById('serverConfigPanel').style.display = 'none', 1500);
+    } else {
+      showConfigStatus(`✗ Could not reach ${BACKEND_URL} — is Flask running?`, 'var(--red)');
+    }
+  }
+
+  function showConfigStatus(msg, color) {
+    const el = document.getElementById('configStatus');
+    el.textContent = msg;
+    el.style.color = color;
+    el.style.display = 'block';
+  }
+
+  // showResults() removed — flow is now driven by startAnalysis() + fetchPrediction()
+
+  function renderResults(result) {
+    const { class_idx, confidence, probabilities, gradcam_image, has_impairment } = result;
+
+    // Store full result for PDF download
+    lastScanResult = result;
+    lastScanResult.scan_date = new Date().toLocaleDateString('en-US', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    // Show download button
+    document.getElementById('btnDownload').style.display = 'inline-flex';
+    const cls = classData[class_idx];
+
+    // ── Diagnosis ──────────────────────────────────────────────
+    document.getElementById('diagnosisBadge').textContent = cls.badge;
+    document.getElementById('diagnosisBadge').className   = 'diagnosis-badge ' + cls.sev;
+    document.getElementById('diagnosisBadge').style.cssText = '';
+    document.getElementById('diagnosisLabel').textContent  = cls.label;
+    document.getElementById('diagnosisLabel').className    = 'diagnosis-label ' + cls.sev;
+    document.getElementById('diagnosisLabel').style.color  = '';
+    document.getElementById('diagnosisSubtext').textContent = cls.subtext;
+    document.getElementById('confidenceVal').textContent   = (confidence * 100).toFixed(1) + '%';
+    document.getElementById('confidenceVal').className     = 'confidence-val ' + cls.sev;
+
+    // ── Probability bars ───────────────────────────────────────
+    probabilities.forEach((p, i) => {
+      document.getElementById('probVal' + i).textContent = (p * 100).toFixed(1) + '%';
+    });
+
+    // ── Show / hide Grad-CAM panel based on result ─────────────
+    const gradcamPanel   = document.getElementById('gradcamPanel');
+    const healthyNotice  = document.getElementById('healthyNotice');
+
+    if (has_impairment && gradcam_image) {
+      gradcamPanel.style.display  = 'block';
+      healthyNotice.style.display = 'none';
+      renderGradCAM(gradcam_image);
+    } else {
+      gradcamPanel.style.display  = 'none';
+      healthyNotice.style.display = 'flex';
+    }
+
+    // ── AI Report ─────────────────────────────────────────────
+    const aiReport = document.getElementById('aiReport');
+    aiReport.style.display = 'block';
+    if (result.ai_report) {
+      renderAIReport(result.ai_report, has_impairment);
+    } else {
+      // Gemini not configured or failed
+      document.getElementById('aiLoading').style.display = 'none';
+      const errEl = document.getElementById('aiError');
+      errEl.style.display = 'block';
+      errEl.innerHTML = result.ai_report === null
+        ? '⚠ AI report unavailable — add your Gemini API key to app.py and restart the server.'
+        : '⚠ AI report could not be generated for this scan.';
+    }
+
+    // ── Show output section ────────────────────────────────────
+    const outputSection = document.getElementById('outputSection');
+    outputSection.style.display = 'block';
+    outputSection.classList.add('visible');
+
+    // Animate bars after short delay
+    setTimeout(() => {
+      document.getElementById('confidenceBar').style.width = (confidence * 100) + '%';
+      document.getElementById('confidenceBar').className   = 'confidence-bar ' + cls.sev;
+      probabilities.forEach((p, i) => {
+        document.getElementById('prob' + i).style.width = (p * 100) + '%';
+      });
+    }, 150);
+
+    setTimeout(() => {
+      outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 400);
+  }
+
+  function showError(message) {
+    const outputSection = document.getElementById('outputSection');
+    outputSection.style.display = 'block';
+    outputSection.classList.add('visible');
+
+    document.getElementById('diagnosisBadge').textContent       = 'ERROR';
+    document.getElementById('diagnosisBadge').className         = 'diagnosis-badge';
+    document.getElementById('diagnosisBadge').style.cssText     = 'color:#ff3b5c;border-color:#ff3b5c;background:rgba(255,59,92,0.1)';
+    document.getElementById('diagnosisLabel').textContent       = 'Cannot Reach Server';
+    document.getElementById('diagnosisLabel').style.color       = 'var(--red)';
+    document.getElementById('diagnosisSubtext').textContent     = message;
+    document.getElementById('aiReport').style.display = 'block';
+    document.getElementById('aiLoading').style.display = 'none';
+    const aiErrEl = document.getElementById('aiError');
+    aiErrEl.style.display = 'block';
+    aiErrEl.innerHTML = `
+      <strong style="color:var(--red)">The frontend could not connect to the Flask backend.</strong><br><br>
+      <b style="color:var(--text)">Most common causes:</b><br><br>
+      <span style="color:var(--cyan)">1. Flask server not running</span><br>
+      &nbsp;&nbsp;&nbsp;→ Open a terminal and run: <code style="background:var(--surface2);padding:3px 8px;border-radius:4px;font-family:var(--mono);color:var(--green);">python app.py</code><br><br>
+      <span style="color:var(--cyan)">2. Wrong port / URL</span><br>
+      &nbsp;&nbsp;&nbsp;→ Click the <b style="color:var(--text)">⚙ CONFIG</b> button at the top and update the server URL<br><br>
+      <span style="color:var(--cyan)">3. Opening HTML as file:// instead of via Flask</span><br>
+      &nbsp;&nbsp;&nbsp;→ Once Flask is running, open <code style="background:var(--surface2);padding:3px 8px;border-radius:4px;font-family:var(--mono);color:var(--green);">http://localhost:5000</code> in your browser<br><br>
+      <span style="color:var(--cyan)">4. Model file not found</span><br>
+      &nbsp;&nbsp;&nbsp;→ Make sure your <code style="font-family:var(--mono);color:var(--yellow)">.h5</code> file is named <code style="font-family:var(--mono);color:var(--yellow)">alzheimer_model.h5</code> (or edit MODEL_PATH in app.py)
+    `;
+
+    // Auto-open the config panel so user can fix URL immediately
+    document.getElementById('serverConfigPanel').style.display = 'block';
+    document.getElementById('backendUrlInput').value = BACKEND_URL;
+    document.getElementById('serverConfigPanel').scrollIntoView({ behavior: 'smooth' });
+    updateStatusUI('offline');
+  }
+
+  // ============================================================
+  // REAL GRAD-CAM — renders the base64 overlay image from Flask
+  // ============================================================
+  function renderGradCAM(gradcamBase64) {
+    const canvas = document.getElementById('gradcamCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const img = new Image();
+    img.onload = () => {
+      // Match canvas size to the image from backend
+      canvas.width  = img.naturalWidth  || 224;
+      canvas.height = img.naturalHeight || 224;
+      // Animate the Grad-CAM in with a sweep reveal
+      animateGradCAMReveal(canvas, ctx, img);
+    };
+    img.onerror = () => {
+      // Fallback: just draw MRI if heatmap fails to load
+      const fallback = new Image();
+      fallback.onload = () => {
+        canvas.width = fallback.naturalWidth;
+        canvas.height = fallback.naturalHeight;
+        ctx.drawImage(fallback, 0, 0);
+      };
+      fallback.src = uploadedImageDataUrl;
+    };
+    img.src = gradcamBase64;
+  }
+
+  function animateGradCAMReveal(canvas, ctx, img) {
+    const W = canvas.width, H = canvas.height;
+    let frame = 0;
+    const totalFrames = 45;
+
+    function draw() {
+      const progress = frame / totalFrames;
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+
+      ctx.clearRect(0, 0, W, H);
+
+      // Clip reveal: image slides in from left to right
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(0, 0, eased * W, H);
+      ctx.clip();
+      ctx.drawImage(img, 0, 0, W, H);
+      ctx.restore();
+
+      // Cyan sweep line at the reveal edge
+      if (progress < 1) {
+        const sweepX = eased * W;
+        const grad = ctx.createLinearGradient(sweepX - 40, 0, sweepX + 10, 0);
+        grad.addColorStop(0, 'rgba(14,165,233,0)');
+        grad.addColorStop(0.6, 'rgba(14,165,233,0.7)');
+        grad.addColorStop(1, 'rgba(14,165,233,0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(sweepX - 40, 0, 50, H);
+      }
+
+      if (frame < totalFrames) {
+        frame++;
+        requestAnimationFrame(draw);
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+
+  // ============================================================
+  // RESET
+  // ============================================================
+  // ============================================================
+  // AI REPORT RENDERER
+  // ============================================================
+  function renderAIReport(report, hasImpairment) {
+    document.getElementById('aiLoading').style.display = 'none';
+    document.getElementById('aiError').style.display   = 'none';
+    const body = document.getElementById('aiReportBody');
+    body.style.display = 'block';
+
+    const sections = [
+      {
+        key  : 'what_this_means',
+        icon : '🔍',
+        title: 'What This Result Means',
+        type : 'text'
+      },
+      {
+        key  : 'possible_reasons',
+        icon : '🧠',
+        title: 'Why This May Have Happened',
+        type : 'list',
+        cls  : ''
+      },
+      {
+        key  : 'symptoms_to_watch',
+        icon : '⚠️',
+        title: 'Symptoms to Watch For',
+        type : 'list',
+        cls  : 'symptoms'
+      },
+      {
+        key  : 'diet_recommendations',
+        icon : '🥗',
+        title: 'Diet Recommendations',
+        type : 'list',
+        cls  : 'diet'
+      },
+      {
+        key  : 'lifestyle_practices',
+        icon : '🏃',
+        title: 'Lifestyle Practices',
+        type : 'list',
+        cls  : 'lifestyle'
+      },
+      {
+        key  : 'next_medical_steps',
+        icon : '👨‍⚕️',
+        title: 'Next Medical Steps',
+        type : 'list',
+        cls  : 'steps'
+      },
+      {
+        key       : 'caregiver_guidance',
+        icon      : '🏠',
+        title     : 'Caregiver Guidance',
+        type      : 'text',
+        skipIfNull: true
+      },
+      {
+        key       : 'progression_risk',
+        icon      : '🔄',
+        title     : 'Progression Risk & Timeline',
+        type      : 'text',
+        skipIfNull: true
+      },
+      {
+        key  : 'questions_for_doctor',
+        icon : '❓',
+        title: 'Questions to Ask Your Doctor',
+        type : 'list',
+        cls  : 'questions'
+      }
+    ];
+
+    let html = '';
+
+    sections.forEach(sec => {
+      const value = report[sec.key];
+
+      // Skip null/missing sections
+      if (!value || (sec.skipIfNull && value === null)) return;
+
+      html += `<div class="ai-section">
+        <div class="ai-section-title"><span>${sec.icon}</span>${sec.title}</div>`;
+
+      if (sec.type === 'text') {
+        html += `<div class="ai-section-text">${escapeHTML(value)}</div>`;
+      } else if (sec.type === 'list' && Array.isArray(value)) {
+        html += `<ul class="ai-list ${sec.cls || ''}">`;
+        value.forEach(item => {
+          html += `<li>${escapeHTML(item)}</li>`;
+        });
+        html += '</ul>';
+      }
+
+      html += '</div>';
+    });
+
+    body.innerHTML = html;
+
+    // Animate sections in one by one
+    const sectionEls = body.querySelectorAll('.ai-section');
+    sectionEls.forEach((el, i) => {
+      el.style.opacity   = '0';
+      el.style.transform = 'translateY(10px)';
+      el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      setTimeout(() => {
+        el.style.opacity   = '1';
+        el.style.transform = 'translateY(0)';
+      }, i * 80);
+    });
+  }
+
+  function escapeHTML(str) {
+    if (typeof str !== 'string') return String(str);
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ============================================================
+  // PDF REPORT DOWNLOAD
+  // ============================================================
+  async function downloadReport() {
+    if (!lastScanResult) return;
+
+    const btn = document.getElementById('btnDownload');
+    btn.disabled = true;
+    btn.innerHTML = '⏳ &nbsp;GENERATING PDF...';
+
+    try {
+      const payload = {
+        class_name   : lastScanResult.class_name,
+        confidence   : lastScanResult.confidence,
+        probabilities: lastScanResult.probabilities,
+        gradcam_image: lastScanResult.gradcam_image || null,
+        ai_report    : lastScanResult.ai_report    || null,
+        scan_date    : lastScanResult.scan_date
+      };
+
+      const response = await fetch(`${BACKEND_URL}/report`, {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body   : JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || 'PDF generation failed');
+      }
+
+      const data = await response.json();
+
+      if (data.pdf) {
+        // Create download link and trigger it
+        const link     = document.createElement('a');
+        link.href      = data.pdf;
+        const dateStr  = (lastScanResult.scan_date || 'report').replace(/\s/g, '_');
+        link.download  = `NeuroScan_Report_${lastScanResult.class_name}_${dateStr}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        btn.innerHTML = '✓ &nbsp;DOWNLOADED';
+        setTimeout(() => {
+          btn.innerHTML = '⬇ &nbsp;DOWNLOAD PDF REPORT';
+          btn.disabled  = false;
+        }, 3000);
+      } else {
+        throw new Error('No PDF in response');
+      }
+
+    } catch (err) {
+      console.error('PDF error:', err);
+      btn.innerHTML = '✗ &nbsp;FAILED — RETRY';
+      btn.disabled  = false;
+      setTimeout(() => {
+        btn.innerHTML = '⬇ &nbsp;DOWNLOAD PDF REPORT';
+      }, 3000);
+    }
+  }
+
+  function resetAll() {
+    selectedFile = null;
+    uploadedImageDataUrl = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('previewImg').src = '';
+    document.getElementById('previewArea').classList.remove('visible');
+    document.getElementById('btnAnalyze').classList.remove('visible');
+    document.getElementById('btnAnalyze').disabled = false;
+    const outputSection = document.getElementById('outputSection');
+    outputSection.style.display = 'none';
+    outputSection.classList.remove('visible');
+    document.getElementById('confidenceBar').style.width = '0%';
+    [0,1,2,3].forEach(i => document.getElementById('prob'+i).style.width = '0%');
+    // Reset heatmap / healthy panels
+    document.getElementById('gradcamPanel').style.display  = 'none';
+    document.getElementById('healthyNotice').style.display = 'none';
+    // Hide download button and clear last result
+    document.getElementById('btnDownload').style.display = 'none';
+    document.getElementById('btnDownload').disabled      = false;
+    document.getElementById('btnDownload').innerHTML     = '⬇ &nbsp;DOWNLOAD PDF REPORT';
+    lastScanResult = null;
+    // Reset AI report
+    document.getElementById('aiReport').style.display      = 'none';
+    document.getElementById('aiLoading').style.display     = 'flex';
+    document.getElementById('aiReportBody').style.display  = 'none';
+    document.getElementById('aiReportBody').innerHTML      = '';
+    document.getElementById('aiError').style.display       = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+best_densenet_model.h5
+.env
+Alzheimer MRI  Dataset/
